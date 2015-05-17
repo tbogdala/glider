@@ -20,6 +20,10 @@ type AABSquare struct {
 
 	// Max is the corner of the box opposite of Min. (e.g. top-right corner)
 	Max Vec2
+
+	// Tags provides a way to label an AABB geometry in a custom application
+	// (e.g. labelling a collision as "wall" or "floor").
+	Tags []string
 }
 
 // IntersectPoint tests to see if the point is intersects the AABSquare.
@@ -40,6 +44,10 @@ type AABBox struct {
 
 	// Max is the corner of the box opposite of Min. (e.g. top-front-right corner)
 	Max Vec3
+
+	// Tags provides a way to label an AABB geometry in a custom application
+	// (e.g. labelling a collision as "wall" or "floor").
+	Tags []string
 }
 
 // CollisionRay represents a simple ray for casting in collision tests.
