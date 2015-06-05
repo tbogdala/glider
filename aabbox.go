@@ -26,6 +26,12 @@ type AABSquare struct {
 	Tags []string
 }
 
+// NewAABSquare creates a new AABSquare object
+func NewAABSquare() *AABSquare {
+	aabs := new(AABSquare)
+	return aabs
+}
+
 // IntersectPoint tests to see if the point is intersects the AABSquare.
 func (aabs *AABSquare) IntersectPoint(v *Vec2) bool {
 	if v[0] < aabs.Min[0] || v[0] > aabs.Max[0] {
@@ -48,6 +54,12 @@ type AABBox struct {
 	// Tags provides a way to label an AABB geometry in a custom application
 	// (e.g. labelling a collision as "wall" or "floor").
 	Tags []string
+}
+
+// NewAABBox creates a new AABBox object
+func NewAABBox() *AABBox {
+	aabb := new(AABBox)
+	return aabb
 }
 
 // CollisionRay represents a simple ray for casting in collision tests.
