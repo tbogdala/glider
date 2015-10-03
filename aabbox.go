@@ -21,6 +21,9 @@ type AABSquare struct {
 	// Max is the corner of the box opposite of Min. (e.g. top-right corner)
 	Max Vec2
 
+	// Offset is the world-space location of the that can be considered an offset to both Min and Max
+	Offset Vec2
+
 	// Tags provides a way to label an AABB geometry in a custom application
 	// (e.g. labelling a collision as "wall" or "floor").
 	Tags []string
@@ -34,10 +37,10 @@ func NewAABSquare() *AABSquare {
 
 // IntersectPoint tests to see if the point is intersects the AABSquare.
 func (aabs *AABSquare) IntersectPoint(v *Vec2) bool {
-	if v[0] < aabs.Min[0] || v[0] > aabs.Max[0] {
+	if v[0] < aabs.Offset[0]+aabs.Min[0] || v[0] > aabs.Offset[0]+aabs.Max[0] {
 		return false
 	}
-	if v[1] < aabs.Min[1] || v[1] > aabs.Max[1] {
+	if v[1] < aabs.Offset[1]+aabs.Min[1] || v[1] > aabs.Offset[1]+aabs.Max[1] {
 		return false
 	}
 	return true
@@ -50,6 +53,9 @@ type AABBox struct {
 
 	// Max is the corner of the box opposite of Min. (e.g. top-front-right corner)
 	Max Vec3
+
+	// Offset is the world-space location of the that can be considered an offset to both Min and Max
+	Offset Vec3
 
 	// Tags provides a way to label an AABB geometry in a custom application
 	// (e.g. labelling a collision as "wall" or "floor").
@@ -97,13 +103,20 @@ func (cr *CollisionRay) GetDirection() Vec3 {
 
 // IntersectPoint tests to see if the point is intersects the AABBox.
 func (aabb *AABBox) IntersectPoint(v *Vec3) bool {
-	if v[0] < aabb.Min[0] || v[0] > aabb.Max[0] {
+	aMinX := aabb.Min[0] + aabb.Offset[0]
+	aMinY := aabb.Min[1] + aabb.Offset[1]
+	aMinZ := aabb.Min[2] + aabb.Offset[2]
+	aMaxX := aabb.Max[0] + aabb.Offset[0]
+	aMaxY := aabb.Max[1] + aabb.Offset[1]
+	aMaxZ := aabb.Max[2] + aabb.Offset[2]
+
+	if v[0] < aMinX || v[0] > aMaxX {
 		return false
 	}
-	if v[1] < aabb.Min[1] || v[1] > aabb.Max[1] {
+	if v[1] < aMinY || v[1] > aMaxY {
 		return false
 	}
-	if v[2] < aabb.Min[2] || v[2] > aabb.Max[2] {
+	if v[2] < aMinZ || v[2] > aMaxZ {
 		return false
 	}
 	return true
@@ -111,21 +124,42 @@ func (aabb *AABBox) IntersectPoint(v *Vec3) bool {
 
 // IntersectBox tests to see if the AABBox parameter intersects the AABBox.
 func (aabb *AABBox) IntersectBox(b2 *AABBox) bool {
-	return (max32(aabb.Min[0], b2.Min[0]) <= min32(aabb.Max[0], b2.Max[0]) &&
-		max32(aabb.Min[1], b2.Min[1]) <= min32(aabb.Max[1], b2.Max[1]) &&
-		max32(aabb.Min[2], b2.Min[2]) <= min32(aabb.Max[2], b2.Max[2]))
+	aMinX := aabb.Min[0] + aabb.Offset[0]
+	aMinY := aabb.Min[1] + aabb.Offset[1]
+	aMinZ := aabb.Min[2] + aabb.Offset[2]
+	aMaxX := aabb.Max[0] + aabb.Offset[0]
+	aMaxY := aabb.Max[1] + aabb.Offset[1]
+	aMaxZ := aabb.Max[2] + aabb.Offset[2]
+
+	bMinX := b2.Min[0] + b2.Offset[0]
+	bMinY := b2.Min[1] + b2.Offset[1]
+	bMinZ := b2.Min[2] + b2.Offset[2]
+	bMaxX := b2.Max[0] + b2.Offset[0]
+	bMaxY := b2.Max[1] + b2.Offset[1]
+	bMaxZ := b2.Max[2] + b2.Offset[2]
+
+	return (max32(aMinX, bMinX) <= min32(aMaxX, bMaxX) &&
+		max32(aMinY, bMinY) <= min32(aMaxY, bMaxY) &&
+		max32(aMinZ, bMinZ) <= min32(aMaxZ, bMaxZ))
 }
 
 // IntersectRay tests to see if a raycast intersects the AABBox.
 // Returns intersection status and the length of the ray until intersection
 func (aabb *AABBox) IntersectRay(ray *CollisionRay) (bool, float32) {
-	t1 := (aabb.Min[0] - ray.Origin[0]) * ray.directionFraction[0]
-	t3 := (aabb.Min[1] - ray.Origin[1]) * ray.directionFraction[1]
-	t5 := (aabb.Min[2] - ray.Origin[2]) * ray.directionFraction[2]
+	aMinX := aabb.Min[0] + aabb.Offset[0]
+	aMinY := aabb.Min[1] + aabb.Offset[1]
+	aMinZ := aabb.Min[2] + aabb.Offset[2]
+	aMaxX := aabb.Max[0] + aabb.Offset[0]
+	aMaxY := aabb.Max[1] + aabb.Offset[1]
+	aMaxZ := aabb.Max[2] + aabb.Offset[2]
 
-	t2 := (aabb.Max[0] - ray.Origin[0]) * ray.directionFraction[0]
-	t4 := (aabb.Max[1] - ray.Origin[1]) * ray.directionFraction[1]
-	t6 := (aabb.Max[2] - ray.Origin[2]) * ray.directionFraction[2]
+	t1 := (aMinX - ray.Origin[0]) * ray.directionFraction[0]
+	t3 := (aMinY - ray.Origin[1]) * ray.directionFraction[1]
+	t5 := (aMinZ - ray.Origin[2]) * ray.directionFraction[2]
+
+	t2 := (aMaxX - ray.Origin[0]) * ray.directionFraction[0]
+	t4 := (aMaxY - ray.Origin[1]) * ray.directionFraction[1]
+	t6 := (aMaxZ - ray.Origin[2]) * ray.directionFraction[2]
 
 	tmin := max32(max32(min32(t1, t2), min32(t3, t4)), min32(t5, t6))
 	tmax := min32(min32(max32(t1, t2), max32(t3, t4)), max32(t5, t6))

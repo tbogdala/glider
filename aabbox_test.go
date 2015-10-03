@@ -13,12 +13,24 @@ func TestAABSquareCollisionVsPoint(t *testing.T) {
 
 	s1.Min = Vec2{0.0, 0.0}
 	s1.Max = Vec2{1.0, 1.0}
+	s1.Offset = Vec2{0.0, 0.0}
 
 	p1 = Vec2{0.5, 0.5}
-
 	if s1.IntersectPoint(&p1) == false {
 		t.Error("AABSquare.IntersectPoint() indicated false with a unit square and a point that intersect.")
 	}
+
+	s1.Offset = Vec2{10.0, 5.0}
+	p1 = Vec2{0.5, 0.5}
+	if s1.IntersectPoint(&p1) == true {
+		t.Error("AABSquare.IntersectPoint() indicated false with a unit square and a point that intersect.")
+	}
+
+	p1 = Vec2{10.5, 5.5}
+	if s1.IntersectPoint(&p1) == false {
+		t.Error("AABSquare.IntersectPoint() indicated false with a unit square and a point that intersect.")
+	}
+
 }
 
 func TestAABBoxNoCollision(t *testing.T) {
@@ -69,25 +81,21 @@ func TestAABBoxCollisionVsPoint(t *testing.T) {
 
 	b1.Min = Vec3{0.0, 0.0, 0.0}
 	b1.Max = Vec3{1.0, 1.0, 1.0}
+	b1.Offset = Vec3{0.0, 0.0, 0.0}
 
 	p1 = Vec3{0.5, 0.5, 0.5}
-
 	if b1.IntersectPoint(&p1) == false {
 		t.Error("AABBox.IntersectPoint() indicated false with a unit cube and a point that intersect.")
 	}
-}
 
-func TestAABBoxNoCollisionVsPoint(t *testing.T) {
-	var b1 AABBox
-	var p1 Vec3
-
-	b1.Min = Vec3{0.0, 0.0, 0.0}
-	b1.Max = Vec3{1.0, 1.0, 1.0}
-
-	p1 = Vec3{1.5, 1.5, 1.5}
-
+	b1.Offset = Vec3{3.0, 3.0, 3.0}
 	if b1.IntersectPoint(&p1) == true {
-		t.Error("AABBox.IntersectPoint() indicated true with a unit cube and a point that do not intersect.")
+		t.Error("AABBox.IntersectPoint() indicated false with a unit cube and a point that intersect.")
+	}
+
+	p1 = Vec3{3.5, 3.5, 3.5}
+	if b1.IntersectPoint(&p1) == false {
+		t.Error("AABBox.IntersectPoint() indicated false with a unit cube and a point that intersect.")
 	}
 }
 
@@ -146,5 +154,50 @@ func TestAABBoxCollisionVsRay(t *testing.T) {
 	intersect, _ = b1.IntersectRay(&r1)
 	if intersect == false {
 		t.Error("AABBox.IntersectRay() indicated false with a ray starting at the center of the box.")
+	}
+}
+
+func TestAABBoxCollisionVsRay2(t *testing.T) {
+	var b1 AABBox
+	var r1 CollisionRay
+
+	b1.Min = Vec3{-1.0, -1.0, -1.0}
+	b1.Max = Vec3{1.0, 1.0, 1.0}
+	b1.Offset = Vec3{10.0, 0.0, 0.0}
+
+	// cast at the center
+	r1.Origin = Vec3{15.0, 0.0, 0.0}
+	r1.SetDirection(Vec3{-1.0, 0.0, 0.0})
+
+	intersect, _ := b1.IntersectRay(&r1)
+	if intersect == false {
+		t.Error("AABBox.IntersectRay2() indicated false with a ray pointed at it's center.")
+	}
+
+	// cast away from it
+	r1.Origin = Vec3{15.0, 0.0, 0.0}
+	r1.SetDirection(Vec3{1.0, 0.0, 0.0})
+
+	intersect, _ = b1.IntersectRay(&r1)
+	if intersect == true {
+		t.Error("AABBox.IntersectRay2() indicated true with a ray pointed away from it.")
+	}
+
+	// cast at the edge
+	r1.Origin = Vec3{10.0, 1.0, 1.0}
+	r1.SetDirection(Vec3{-1.0, 0.0, 0.0})
+
+	intersect, _ = b1.IntersectRay(&r1)
+	if intersect == false {
+		t.Error("AABBox.IntersectRay2() indicated false with a ray pointed at it's edge.")
+	}
+
+	// cast from inside
+	r1.Origin = Vec3{10.0, 0.0, 0.0}
+	r1.SetDirection(Vec3{1.0, 1.0, 1.0})
+
+	intersect, _ = b1.IntersectRay(&r1)
+	if intersect == false {
+		t.Error("AABBox.IntersectRay2() indicated false with a ray starting at the center of the box.")
 	}
 }
