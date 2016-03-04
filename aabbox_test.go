@@ -201,3 +201,89 @@ func TestAABBoxCollisionVsRay2(t *testing.T) {
 		t.Error("AABBox.IntersectRay2() indicated false with a ray starting at the center of the box.")
 	}
 }
+
+func TestAABBoxCollisionVsPlane(t *testing.T) {
+	var b1 AABBox
+	var p *Plane
+
+	b1.Min = Vec3{-10.0, -10.0, -10.0}
+	b1.Max = Vec3{10.0, 10.0, 10.0}
+	b1.Offset = Vec3{0.0, 0.0, 0.0}
+
+	// Plane @ {0, 0, 0}   Normal---> {1, 0, 0}
+	planeNormal := Vec3{1.0, 0.0, 0.0}
+	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{0, 0, 0})
+	if b1.IntersectPlane(p) != Intersect {
+		t.Errorf("AABBox.InstersectPlane() indicated a box didn't intersect that should have.")
+	}
+
+	// Plane @ {20, 0, 0}   Normal---> {1, 0, 0}
+	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{20, 0, 0})
+	if b1.IntersectPlane(p) != Outside {
+		t.Errorf("AABBox.InstersectPlane() indicated a box wasn't Outside that should have been.")
+	}
+
+	// Plane @ {-20, 0, 0}   Normal---> {1, 0, 0}
+	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{-20, 0, 0})
+	if b1.IntersectPlane(p) != Inside {
+		t.Errorf("AABBox.InstersectPlane() indicated a box wasn't Inside that should have been.")
+	}
+
+	// Now do the same tests but with the box having an Offset
+	b1.Offset = Vec3{25, 25, 25}
+
+	// Plane @ {0, 0, 0}   Normal---> {1, 0, 0}
+	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{0, 0, 0})
+	if b1.IntersectPlane(p) != Inside {
+		t.Errorf("AABBox.InstersectPlane() indicated a box wasn't Inside that should have been.")
+	}
+
+	// Plane @ {50, 0, 0}   Normal---> {1, 0, 0}
+	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{50, 0, 0})
+	if b1.IntersectPlane(p) != Outside {
+		t.Errorf("AABBox.InstersectPlane() indicated a box wasn't Outside that should have been.")
+	}
+
+	// Plane @ {25, 25, 25}   Normal---> {1, 0, 0}
+	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{25, 25, 25})
+	if b1.IntersectPlane(p) != Intersect {
+		t.Errorf("AABBox.InstersectPlane() indicated a box didn't intersect that should have.")
+	}
+
+	// Reset the box to origin as a 16^3 cube
+	b1.Min = Vec3{0.0, 0.0, 0.0}
+	b1.Max = Vec3{16.0, 16.0, 16.0}
+	b1.Offset = Vec3{0.0, 0.0, 0.0}
+
+	// Add a second box some distance off
+	var b2 AABBox
+	b2.Min = Vec3{0.0, 0.0, 0.0}
+	b2.Max = Vec3{16.0, 16.0, 16.0}
+	b2.Offset = Vec3{32.0, 0.0, 0.0}
+
+	// Plane @ {8, 8, 8}   Normal---> {1, 0, 0}
+	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{8, 8, 8})
+	if b1.IntersectPlane(p) != Intersect {
+		t.Errorf("AABBox.InstersectPlane() indicated a box didn't intersect that should have.")
+	}
+	if b2.IntersectPlane(p) != Inside {
+		t.Errorf("AABBox.InstersectPlane() indicated a box wasn't Inside that should have been.")
+	}
+
+	// Plane @ {18, 8, 8}   Normal---> {1, 0, 0}
+	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{18, 8, 8})
+	if b1.IntersectPlane(p) != Outside {
+		t.Errorf("AABBox.InstersectPlane() indicated a box wasn't Outside that should have been.")
+	}
+	if b2.IntersectPlane(p) != Inside {
+		t.Errorf("AABBox.InstersectPlane() indicated a box wasn't Inside that should have been.")
+	}
+
+	// last test along border of box
+	// Plane @ {0, 0, 0}   Normal---> {1, 0, 0}
+	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{0, 0, 0})
+	if b1.IntersectPlane(p) != Intersect {
+		t.Errorf("AABBox.InstersectPlane() indicated a box didn't intersect that should have.")
+	}
+
+}

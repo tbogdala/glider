@@ -1,7 +1,7 @@
 Glider
 ======
 
-Glider is a collision library written in the [Go][golang] programming language.
+Glider is a simple collision library written in the [Go][golang] programming language.
 
 
 Installation
@@ -19,6 +19,7 @@ Current Features
 
 * 2D/3D Axis Aligned Bounding Box collision testing
 * Basic ray cast intersection tests vs. AABB
+* Plane intersection tests vs. AABB
 
 
 Documentation

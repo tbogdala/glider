@@ -7,11 +7,50 @@ import (
 	"math"
 )
 
+const (
+	// Inside means the collision was considered to be inside the object
+	Inside = 1
+
+	// Outside means the collision was considered to be outside the object
+	Outside = 2
+
+	// Intersect means there was a collision
+	Intersect = 4
+)
+
 // Vec3 is a 3 dimenional vector
 type Vec3 [3]float32
 
+// Dot calculates the dot product between two vectors and returns the scalar result.
+func (v1 *Vec3) Dot(v2 *Vec3) float32 {
+	return (v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])
+}
+
 // Vec2 is a 2 dimenional vector
 type Vec2 [2]float32
+
+// Plane represents an infinite plane defined by a point and its normal.
+type Plane struct {
+	// Normal is the direction the plane is facing; the normal of the plane.
+	Normal Vec3
+
+	// D is the plane constant, considered to be the distance from the origin.
+	D float32
+}
+
+// NewPlaneFromNormalAndPoint makes a new Plane object based on a normal
+// and point in space.
+func NewPlaneFromNormalAndPoint(normal, point Vec3) *Plane {
+	p := new(Plane)
+	p.Normal = normal
+	p.D = -(normal.Dot(&point))
+	return p
+}
+
+// Distance calculates the distance of the plane to the vertex
+func (p *Plane) Distance(v *Vec3) float32 {
+	return p.D + p.Normal.Dot(v)
+}
 
 // AABSquare is a axis aligned sqare shape defined by a minimum and maximum corner.
 type AABSquare struct {
@@ -49,9 +88,11 @@ func (aabs *AABSquare) IntersectPoint(v *Vec2) bool {
 // AABBox is a axis aligned cube shape defined by a minimum and maximum corner.
 type AABBox struct {
 	// Min is the corner of the box opposite of Max. (e.g. lower-back-left corner)
+	// and should be the more 'negative' corner (e.g. max={3,3,3} and min={1,1,1} )
 	Min Vec3
 
 	// Max is the corner of the box opposite of Min. (e.g. top-front-right corner)
+	// and should be the more 'positive' corner (e.g. max={3,3,3} and min={1,1,1} )
 	Max Vec3
 
 	// Offset is the world-space location of the that can be considered an offset to both Min and Max
@@ -174,4 +215,48 @@ func (aabb *AABBox) IntersectRay(ray *CollisionRay) (bool, float32) {
 	}
 
 	return true, tmin
+}
+
+// IntersectPlane tests to see if the plane is intersects the AABBox.
+func (aabb *AABBox) IntersectPlane(p *Plane) int {
+	// implementation based on http://www.lighthouse3d.com/tutorials/view-frustum-culling/
+	// and http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes-ii/
+	min := Vec3{aabb.Min[0] + aabb.Offset[0], aabb.Min[1] + aabb.Offset[1], aabb.Min[2] + aabb.Offset[2]}
+	max := Vec3{aabb.Max[0] + aabb.Offset[0], aabb.Max[1] + aabb.Offset[1], aabb.Max[2] + aabb.Offset[2]}
+
+	var posCorner, negCorner Vec3
+	if p.Normal[0] >= 0 {
+		negCorner[0] = min[0]
+		posCorner[0] = max[0]
+	} else {
+		negCorner[0] = max[0]
+		posCorner[0] = min[0]
+	}
+
+	if p.Normal[1] >= 0 {
+		negCorner[1] = min[1]
+		posCorner[1] = max[1]
+	} else {
+		negCorner[1] = max[1]
+		posCorner[1] = min[1]
+	}
+
+	if p.Normal[2] >= 0 {
+		negCorner[2] = min[2]
+		posCorner[2] = max[2]
+	} else {
+		negCorner[2] = max[2]
+		posCorner[2] = min[2]
+	}
+
+	// is the positive vertex outside
+	if p.Distance(&posCorner) < 0 {
+		return Outside
+	}
+	// is the negative vertex outside
+	if p.Distance(&negCorner) <= 0 {
+		return Intersect
+	}
+
+	return Inside
 }
