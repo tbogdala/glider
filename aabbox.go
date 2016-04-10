@@ -3,9 +3,7 @@
 
 package glider
 
-import (
-	"math"
-)
+import "math"
 
 const (
 	// Inside means the collision was considered to be inside the object
@@ -24,6 +22,27 @@ type Vec3 [3]float32
 // Dot calculates the dot product between two vectors and returns the scalar result.
 func (v1 *Vec3) Dot(v2 *Vec3) float32 {
 	return (v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])
+}
+
+// SubInto performs v2-v3 and puts the result into v1, the calling object.
+func (v1 *Vec3) SubInto(v2 *Vec3, v3 *Vec3) {
+	v1[0] = v2[0] - v3[0]
+	v1[1] = v2[1] - v3[1]
+	v1[2] = v2[2] - v3[2]
+}
+
+// AddInto performs v2+v3 and puts the result into v1, the calling object.
+func (v1 *Vec3) AddInto(v2 *Vec3, v3 *Vec3) {
+	v1[0] = v2[0] + v3[0]
+	v1[1] = v2[1] + v3[1]
+	v1[2] = v2[2] + v3[2]
+}
+
+// MulWith multiplies a vector with a scalar value
+func (v1 *Vec3) MulWith(f float32) {
+	v1[0] = v1[0] * f
+	v1[1] = v1[1] * f
+	v1[2] = v1[2] * f
 }
 
 // Vec2 is a 2 dimenional vector
@@ -83,6 +102,16 @@ func (aabs *AABSquare) IntersectPoint(v *Vec2) bool {
 		return false
 	}
 	return true
+}
+
+// Sphere is defined by a center point and a radius and can be used in collisions
+// against AABB.
+type Sphere struct {
+	// Center is the center point of the sphere
+	Center Vec3
+
+	// Radius determines the size of the sphere
+	Radius float32
 }
 
 // AABBox is a axis aligned cube shape defined by a minimum and maximum corner.
@@ -259,4 +288,64 @@ func (aabb *AABBox) IntersectPlane(p *Plane) int {
 	}
 
 	return Inside
+}
+
+// IntersectSphere returns the intersection between an AABB and a sphere. Will
+// return Intersect or Outside depending on the result.
+func (aabb *AABBox) IntersectSphere(s *Sphere) int {
+	min := Vec3{aabb.Min[0] + aabb.Offset[0], aabb.Min[1] + aabb.Offset[1], aabb.Min[2] + aabb.Offset[2]}
+	max := Vec3{aabb.Max[0] + aabb.Offset[0], aabb.Max[1] + aabb.Offset[1], aabb.Max[2] + aabb.Offset[2]}
+
+	// calc the center of the sphere relative to the box center
+	var sphereCenterRelToBox, boxCenter Vec3
+	boxCenter.SubInto(&max, &min)
+	boxCenter.MulWith(0.5)
+	boxCenter.AddInto(&boxCenter, &min)
+	sphereCenterRelToBox.SubInto(&s.Center, &boxCenter)
+
+	// calculate the point of the cube that is closest to the center of the sphere.
+	var boxPoint Vec3
+
+	// half dimensions
+	boxHalfW := (max[0] - min[0]) * 0.5
+	boxHalfH := (max[1] - min[1]) * 0.5
+	boxHalfD := (max[2] - min[2]) * 0.5
+
+	// calculate x-axis
+	if sphereCenterRelToBox[0] < -boxHalfW {
+		boxPoint[0] = -boxHalfW
+	} else if sphereCenterRelToBox[0] > boxHalfW {
+		boxPoint[0] = boxHalfW
+	} else {
+		boxPoint[0] = sphereCenterRelToBox[0]
+	}
+
+	// calculate y-axis
+	if sphereCenterRelToBox[1] < -boxHalfH {
+		boxPoint[1] = -boxHalfH
+	} else if sphereCenterRelToBox[1] > boxHalfH {
+		boxPoint[1] = boxHalfH
+	} else {
+		boxPoint[1] = sphereCenterRelToBox[1]
+	}
+
+	// calculate z-axis
+	if sphereCenterRelToBox[2] < -boxHalfD {
+		boxPoint[2] = -boxHalfD
+	} else if sphereCenterRelToBox[2] > boxHalfD {
+		boxPoint[2] = boxHalfD
+	} else {
+		boxPoint[2] = sphereCenterRelToBox[2]
+	}
+
+	// use the closest point on the box to get the distance between
+	// that and the center of the sphere and see if it's less than
+	// the radius.
+	var distance Vec3
+	distance.SubInto(&sphereCenterRelToBox, &boxPoint)
+	if distance.Dot(&distance) <= s.Radius*s.Radius {
+		return Intersect
+	}
+
+	return Outside
 }

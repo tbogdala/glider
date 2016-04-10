@@ -287,3 +287,44 @@ func TestAABBoxCollisionVsPlane(t *testing.T) {
 	}
 
 }
+
+func TestAABBoxCollisionVsSphere(t *testing.T) {
+	var b1 AABBox
+	var sphere Sphere
+
+	b1.Min = Vec3{-10.0, -10.0, -10.0}
+	b1.Max = Vec3{10.0, 10.0, 10.0}
+	b1.Offset = Vec3{0.0, 0.0, 0.0}
+
+	// Sphere {0, 0, 0} | r = 5.0
+	sphere = Sphere{Center: Vec3{0.0, 0.0, 0.0}, Radius: 5.0}
+	if b1.IntersectSphere(&sphere) != Intersect {
+		t.Errorf("AABBox.IntersectSphere() indicated a box didn't intersect that should have.")
+	}
+
+	// Sphere {15, 0, 0} | r = 5.0
+	sphere = Sphere{Center: Vec3{15.0, 0.0, 0.0}, Radius: 5.0}
+	if b1.IntersectSphere(&sphere) != Intersect {
+		t.Errorf("AABBox.IntersectSphere() indicated a box didn't intersect that should have.")
+	}
+
+	// Sphere {16, 0, 0} | r = 5.0
+	sphere = Sphere{Center: Vec3{16.0, 0.0, 0.0}, Radius: 5.0}
+	if b1.IntersectSphere(&sphere) != Outside {
+		t.Errorf("AABBox.IntersectSphere() indicated a box intersected that should not have.")
+	}
+
+	// change the box offset ... effective {0, 0, 0}->{20, 20, 20}
+	b1.Offset = Vec3{10.0, 10.0, 10.0}
+	// Sphere {0, 0, 0} | r = 5.0
+	sphere = Sphere{Center: Vec3{0.0, 0.0, 0.0}, Radius: 5.0}
+	if b1.IntersectSphere(&sphere) != Intersect {
+		t.Errorf("AABBox.IntersectSphere() indicated a box didn't intersect that should have.")
+	}
+
+	sphere = Sphere{Center: Vec3{-6.0, 0.0, 0.0}, Radius: 5.0}
+	if b1.IntersectSphere(&sphere) != Outside {
+		t.Errorf("AABBox.IntersectSphere() indicated a box intersected that should not have.")
+	}
+
+}

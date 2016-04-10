@@ -20,7 +20,7 @@ Current Features
 * 2D/3D Axis Aligned Bounding Box collision testing
 * Basic ray cast intersection tests vs. AABB
 * Plane intersection tests vs. AABB
-
+* Sphere intersection tests vs AABB
 
 Documentation
 -------------
