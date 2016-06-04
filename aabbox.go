@@ -1,75 +1,7 @@
-// Copyright 2015, Timothy Bogdala <tdb@animal-machine.com>
+// Copyright 2016, Timothy Bogdala <tdb@animal-machine.com>
 // See the LICENSE file for more details.
 
 package glider
-
-import "math"
-
-const (
-	// Inside means the collision was considered to be inside the object
-	Inside = 1
-
-	// Outside means the collision was considered to be outside the object
-	Outside = 2
-
-	// Intersect means there was a collision
-	Intersect = 4
-)
-
-// Vec3 is a 3 dimenional vector
-type Vec3 [3]float32
-
-// Dot calculates the dot product between two vectors and returns the scalar result.
-func (v1 *Vec3) Dot(v2 *Vec3) float32 {
-	return (v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])
-}
-
-// SubInto performs v2-v3 and puts the result into v1, the calling object.
-func (v1 *Vec3) SubInto(v2 *Vec3, v3 *Vec3) {
-	v1[0] = v2[0] - v3[0]
-	v1[1] = v2[1] - v3[1]
-	v1[2] = v2[2] - v3[2]
-}
-
-// AddInto performs v2+v3 and puts the result into v1, the calling object.
-func (v1 *Vec3) AddInto(v2 *Vec3, v3 *Vec3) {
-	v1[0] = v2[0] + v3[0]
-	v1[1] = v2[1] + v3[1]
-	v1[2] = v2[2] + v3[2]
-}
-
-// MulWith multiplies a vector with a scalar value
-func (v1 *Vec3) MulWith(f float32) {
-	v1[0] = v1[0] * f
-	v1[1] = v1[1] * f
-	v1[2] = v1[2] * f
-}
-
-// Vec2 is a 2 dimenional vector
-type Vec2 [2]float32
-
-// Plane represents an infinite plane defined by a point and its normal.
-type Plane struct {
-	// Normal is the direction the plane is facing; the normal of the plane.
-	Normal Vec3
-
-	// D is the plane constant, considered to be the distance from the origin.
-	D float32
-}
-
-// NewPlaneFromNormalAndPoint makes a new Plane object based on a normal
-// and point in space.
-func NewPlaneFromNormalAndPoint(normal, point Vec3) *Plane {
-	p := new(Plane)
-	p.Normal = normal
-	p.D = -(normal.Dot(&point))
-	return p
-}
-
-// Distance calculates the distance of the plane to the vertex
-func (p *Plane) Distance(v *Vec3) float32 {
-	return p.D + p.Normal.Dot(v)
-}
 
 // AABSquare is a axis aligned sqare shape defined by a minimum and maximum corner.
 type AABSquare struct {
@@ -104,15 +36,6 @@ func (aabs *AABSquare) IntersectPoint(v *Vec2) bool {
 	return true
 }
 
-// Sphere is defined by a center point and a radius and can be used in collisions
-// against AABB.
-type Sphere struct {
-	// Center is the center point of the sphere
-	Center Vec3
-
-	// Radius determines the size of the sphere
-	Radius float32
-}
 
 // AABBox is a axis aligned cube shape defined by a minimum and maximum corner.
 type AABBox struct {
@@ -136,39 +59,6 @@ type AABBox struct {
 func NewAABBox() *AABBox {
 	aabb := new(AABBox)
 	return aabb
-}
-
-// CollisionRay represents a simple ray for casting in collision tests.
-type CollisionRay struct {
-	// Origin is the start of the ray
-	Origin Vec3
-
-	// direction is the unit vector representing the direction of the ray
-	direction Vec3
-
-	// a cached value used in raycasting
-	directionFraction Vec3
-}
-
-// SetDirection sets the direction of the collision ray. Will be normalized
-// and have some math cached as well.
-func (cr *CollisionRay) SetDirection(d Vec3) {
-	// normalize the direction vector
-	dLen := float32(math.Sqrt(float64(d[0]*d[0] + d[1]*d[1] + d[2]*d[2])))
-	l := 1.0 / dLen
-	cr.direction[0] = d[0] * l
-	cr.direction[1] = d[1] * l
-	cr.direction[2] = d[2] * l
-
-	// cache some math calculations
-	cr.directionFraction[0] = 1.0 / cr.direction[0]
-	cr.directionFraction[1] = 1.0 / cr.direction[1]
-	cr.directionFraction[2] = 1.0 / cr.direction[2]
-}
-
-// GetDirection gets the direction of the collision ray.
-func (cr *CollisionRay) GetDirection() Vec3 {
-	return cr.direction
 }
 
 // IntersectPoint tests to see if the point is intersects the AABBox.

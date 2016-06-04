@@ -21,6 +21,8 @@ Current Features
 * Basic ray cast intersection tests vs. AABB
 * Plane intersection tests vs. AABB
 * Sphere intersection tests vs AABB
+* Sphere intersection tests vs Sphere
+* Sphere intersection tests vs ray
 
 Documentation
 -------------
