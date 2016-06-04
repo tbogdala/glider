@@ -120,3 +120,50 @@ func TestSphereCollisionVsAABBox(t *testing.T) {
 	}
 
 }
+
+func TestSphereCollisionVsPlane(t *testing.T) {
+	var s1 Sphere
+	s1.Radius = 10.0
+	s1.Center = Vec3{0.0, 0.0, 0.0}
+
+	// Plane @ {0, 0, 0}   Normal---> {1, 0, 0}
+    var p *Plane
+    planeNormal := Vec3{1.0, 0.0, 0.0}
+	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{0, 0, 0})
+	if s1.IntersectPlane(p) != Intersect {
+		t.Errorf("Sphere.InstersectPlane() indicated a sphere didn't intersect that should have.")
+	}
+
+	// Plane @ {20, 0, 0}   Normal---> {1, 0, 0}
+	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{20, 0, 0})
+	if s1.IntersectPlane(p) != Outside {
+		t.Errorf("Sphere.InstersectPlane() indicated a sphere wasn't Outside that should have been.")
+	}
+
+	// Plane @ {-20, 0, 0}   Normal---> {1, 0, 0}
+	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{-20, 0, 0})
+	if s1.IntersectPlane(p) != Inside {
+		t.Errorf("Sphere.InstersectPlane() indicated a sphere wasn't Inside that should have been.")
+	}
+
+    // Now do the same tests but with the sphere having an Offset
+	s1.Center = Vec3{25, 25, 25}
+
+	// Plane @ {0, 0, 0}   Normal---> {1, 0, 0}
+	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{0, 0, 0})
+	if s1.IntersectPlane(p) != Inside {
+		t.Errorf("Sphere.InstersectPlane() indicated a sphere wasn't Inside that should have been.")
+	}
+
+	// Plane @ {50, 0, 0}   Normal---> {1, 0, 0}
+	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{50, 0, 0})
+	if s1.IntersectPlane(p) != Outside {
+		t.Errorf("Sphere.InstersectPlane() indicated a sphere wasn't Outside that should have been.")
+	}
+
+	// Plane @ {25, 25, 25}   Normal---> {1, 0, 0}
+	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{25, 25, 25})
+	if s1.IntersectPlane(p) != Intersect {
+		t.Errorf("Sphere.InstersectPlane() indicated a sphere didn't intersect that should have.")
+	}
+}

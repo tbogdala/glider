@@ -73,3 +73,17 @@ func (s1 *Sphere) IntersectRay(ray *CollisionRay) bool {
 
     return false
 }
+
+// IntersectPlane tests a collision between a sphere and a plane.
+func (s1 *Sphere) IntersectPlane(p *Plane) int {
+    dist := p.Distance(&s1.Center)
+    if dist < 0.0 && -dist > s1.Radius {
+        return Outside
+    }
+
+    if dist > 0.0 && dist > s1.Radius {
+        return Inside
+    }
+
+    return Intersect
+}

@@ -17,12 +17,15 @@ go get github.com/tbogdala/glider
 Current Features
 ----------------
 
-* 2D/3D Axis Aligned Bounding Box collision testing
-* Basic ray cast intersection tests vs. AABB
-* Plane intersection tests vs. AABB
+* Basic 2d box collision
+* AABB intersection vs AABB
+* AABB intersection vs Sphere
+* AABB intersection vs Ray
+* AABB intersection vs Plane
 * Sphere intersection tests vs AABB
 * Sphere intersection tests vs Sphere
-* Sphere intersection tests vs ray
+* Sphere intersection tests vs Ray
+* Sphere intersection tests vs Plane
 
 Documentation
 -------------
