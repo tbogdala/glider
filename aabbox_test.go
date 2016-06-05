@@ -42,7 +42,7 @@ func TestAABBoxNoCollision(t *testing.T) {
 	b2.Min = Vec3{2.0, 2.0, 2.0}
 	b2.Max = Vec3{3.0, 3.0, 3.0}
 
-	if b1.IntersectBox(&b2) == true {
+	if b1.CollideVsAABBox(&b2) == Intersect {
 		t.Error("AABBox.IntersectBox() indicated true with two unit cubes that don't intersect.")
 	}
 }
@@ -56,7 +56,7 @@ func TestAABBoxCollision(t *testing.T) {
 	b2.Min = Vec3{0.5, 0.5, 0.5}
 	b2.Max = Vec3{3.0, 3.0, 3.0}
 
-	if b1.IntersectBox(&b2) == false {
+	if b1.CollideVsAABBox(&b2) == Outside {
 		t.Error("AABBox.IntersectBox() indicated false with two unit cubes that intersect.")
 	}
 }
@@ -70,7 +70,7 @@ func TestAABBoxSiblingCollision(t *testing.T) {
 	b2.Min = Vec3{1.0, 1.0, 1.0}
 	b2.Max = Vec3{3.0, 3.0, 3.0}
 
-	if b1.IntersectBox(&b2) == false {
+	if b1.CollideVsAABBox(&b2) == Outside {
 		t.Error("AABBox.IntersectBox() indicated false with two unit cubes that share an edge.")
 	}
 }
@@ -124,8 +124,8 @@ func TestAABBoxCollisionVsRay(t *testing.T) {
 	r1.Origin = Vec3{5.0, 0.0, 0.0}
 	r1.SetDirection(Vec3{-1.0, 0.0, 0.0})
 
-	intersect, _ := b1.IntersectRay(&r1)
-	if intersect == false {
+	intersect, _ := b1.CollideVsRay(&r1)
+	if intersect == Outside {
 		t.Error("AABBox.IntersectRay() indicated false with a ray pointed at it's center.")
 	}
 
@@ -133,8 +133,8 @@ func TestAABBoxCollisionVsRay(t *testing.T) {
 	r1.Origin = Vec3{5.0, 0.0, 0.0}
 	r1.SetDirection(Vec3{1.0, 0.0, 0.0})
 
-	intersect, _ = b1.IntersectRay(&r1)
-	if intersect == true {
+	intersect, _ = b1.CollideVsRay(&r1)
+	if intersect == Intersect {
 		t.Error("AABBox.IntersectRay() indicated true with a ray pointed away from it.")
 	}
 
@@ -142,8 +142,8 @@ func TestAABBoxCollisionVsRay(t *testing.T) {
 	r1.Origin = Vec3{10.0, 1.0, 1.0}
 	r1.SetDirection(Vec3{-1.0, 0.0, 0.0})
 
-	intersect, _ = b1.IntersectRay(&r1)
-	if intersect == false {
+	intersect, _ = b1.CollideVsRay(&r1)
+	if intersect == Outside {
 		t.Error("AABBox.IntersectRay() indicated false with a ray pointed at it's edge.")
 	}
 
@@ -151,8 +151,8 @@ func TestAABBoxCollisionVsRay(t *testing.T) {
 	r1.Origin = Vec3{0.0, 0.0, 0.0}
 	r1.SetDirection(Vec3{1.0, 1.0, 1.0})
 
-	intersect, _ = b1.IntersectRay(&r1)
-	if intersect == false {
+	intersect, _ = b1.CollideVsRay(&r1)
+	if intersect == Outside {
 		t.Error("AABBox.IntersectRay() indicated false with a ray starting at the center of the box.")
 	}
 }
@@ -169,8 +169,8 @@ func TestAABBoxCollisionVsRay2(t *testing.T) {
 	r1.Origin = Vec3{15.0, 0.0, 0.0}
 	r1.SetDirection(Vec3{-1.0, 0.0, 0.0})
 
-	intersect, _ := b1.IntersectRay(&r1)
-	if intersect == false {
+	intersect, _ := b1.CollideVsRay(&r1)
+	if intersect == Outside {
 		t.Error("AABBox.IntersectRay2() indicated false with a ray pointed at it's center.")
 	}
 
@@ -178,8 +178,8 @@ func TestAABBoxCollisionVsRay2(t *testing.T) {
 	r1.Origin = Vec3{15.0, 0.0, 0.0}
 	r1.SetDirection(Vec3{1.0, 0.0, 0.0})
 
-	intersect, _ = b1.IntersectRay(&r1)
-	if intersect == true {
+	intersect, _ = b1.CollideVsRay(&r1)
+	if intersect == Intersect {
 		t.Error("AABBox.IntersectRay2() indicated true with a ray pointed away from it.")
 	}
 
@@ -187,8 +187,8 @@ func TestAABBoxCollisionVsRay2(t *testing.T) {
 	r1.Origin = Vec3{10.0, 1.0, 1.0}
 	r1.SetDirection(Vec3{-1.0, 0.0, 0.0})
 
-	intersect, _ = b1.IntersectRay(&r1)
-	if intersect == false {
+	intersect, _ = b1.CollideVsRay(&r1)
+	if intersect == Outside {
 		t.Error("AABBox.IntersectRay2() indicated false with a ray pointed at it's edge.")
 	}
 
@@ -196,8 +196,8 @@ func TestAABBoxCollisionVsRay2(t *testing.T) {
 	r1.Origin = Vec3{10.0, 0.0, 0.0}
 	r1.SetDirection(Vec3{1.0, 1.0, 1.0})
 
-	intersect, _ = b1.IntersectRay(&r1)
-	if intersect == false {
+	intersect, _ = b1.CollideVsRay(&r1)
+	if intersect == Outside {
 		t.Error("AABBox.IntersectRay2() indicated false with a ray starting at the center of the box.")
 	}
 }
@@ -213,19 +213,19 @@ func TestAABBoxCollisionVsPlane(t *testing.T) {
 	// Plane @ {0, 0, 0}   Normal---> {1, 0, 0}
 	planeNormal := Vec3{1.0, 0.0, 0.0}
 	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{0, 0, 0})
-	if b1.IntersectPlane(p) != Intersect {
+	if b1.CollideVsPlane(p) != Intersect {
 		t.Errorf("AABBox.InstersectPlane() indicated a box didn't intersect that should have.")
 	}
 
 	// Plane @ {20, 0, 0}   Normal---> {1, 0, 0}
 	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{20, 0, 0})
-	if b1.IntersectPlane(p) != Outside {
+	if b1.CollideVsPlane(p) != Outside {
 		t.Errorf("AABBox.InstersectPlane() indicated a box wasn't Outside that should have been.")
 	}
 
 	// Plane @ {-20, 0, 0}   Normal---> {1, 0, 0}
 	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{-20, 0, 0})
-	if b1.IntersectPlane(p) != Inside {
+	if b1.CollideVsPlane(p) != Inside {
 		t.Errorf("AABBox.InstersectPlane() indicated a box wasn't Inside that should have been.")
 	}
 
@@ -234,19 +234,19 @@ func TestAABBoxCollisionVsPlane(t *testing.T) {
 
 	// Plane @ {0, 0, 0}   Normal---> {1, 0, 0}
 	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{0, 0, 0})
-	if b1.IntersectPlane(p) != Inside {
+	if b1.CollideVsPlane(p) != Inside {
 		t.Errorf("AABBox.InstersectPlane() indicated a box wasn't Inside that should have been.")
 	}
 
 	// Plane @ {50, 0, 0}   Normal---> {1, 0, 0}
 	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{50, 0, 0})
-	if b1.IntersectPlane(p) != Outside {
+	if b1.CollideVsPlane(p) != Outside {
 		t.Errorf("AABBox.InstersectPlane() indicated a box wasn't Outside that should have been.")
 	}
 
 	// Plane @ {25, 25, 25}   Normal---> {1, 0, 0}
 	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{25, 25, 25})
-	if b1.IntersectPlane(p) != Intersect {
+	if b1.CollideVsPlane(p) != Intersect {
 		t.Errorf("AABBox.InstersectPlane() indicated a box didn't intersect that should have.")
 	}
 
@@ -263,26 +263,26 @@ func TestAABBoxCollisionVsPlane(t *testing.T) {
 
 	// Plane @ {8, 8, 8}   Normal---> {1, 0, 0}
 	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{8, 8, 8})
-	if b1.IntersectPlane(p) != Intersect {
+	if b1.CollideVsPlane(p) != Intersect {
 		t.Errorf("AABBox.InstersectPlane() indicated a box didn't intersect that should have.")
 	}
-	if b2.IntersectPlane(p) != Inside {
+	if b2.CollideVsPlane(p) != Inside {
 		t.Errorf("AABBox.InstersectPlane() indicated a box wasn't Inside that should have been.")
 	}
 
 	// Plane @ {18, 8, 8}   Normal---> {1, 0, 0}
 	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{18, 8, 8})
-	if b1.IntersectPlane(p) != Outside {
+	if b1.CollideVsPlane(p) != Outside {
 		t.Errorf("AABBox.InstersectPlane() indicated a box wasn't Outside that should have been.")
 	}
-	if b2.IntersectPlane(p) != Inside {
+	if b2.CollideVsPlane(p) != Inside {
 		t.Errorf("AABBox.InstersectPlane() indicated a box wasn't Inside that should have been.")
 	}
 
 	// last test along border of box
 	// Plane @ {0, 0, 0}   Normal---> {1, 0, 0}
 	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{0, 0, 0})
-	if b1.IntersectPlane(p) != Intersect {
+	if b1.CollideVsPlane(p) != Intersect {
 		t.Errorf("AABBox.InstersectPlane() indicated a box didn't intersect that should have.")
 	}
 
@@ -298,19 +298,19 @@ func TestAABBoxCollisionVsSphere(t *testing.T) {
 
 	// Sphere {0, 0, 0} | r = 5.0
 	sphere = Sphere{Center: Vec3{0.0, 0.0, 0.0}, Radius: 5.0}
-	if b1.IntersectSphere(&sphere) != Intersect {
+	if b1.CollideVsSphere(&sphere) != Intersect {
 		t.Errorf("AABBox.IntersectSphere() indicated a box didn't intersect that should have.")
 	}
 
 	// Sphere {15, 0, 0} | r = 5.0
 	sphere = Sphere{Center: Vec3{15.0, 0.0, 0.0}, Radius: 5.0}
-	if b1.IntersectSphere(&sphere) != Intersect {
+	if b1.CollideVsSphere(&sphere) != Intersect {
 		t.Errorf("AABBox.IntersectSphere() indicated a box didn't intersect that should have.")
 	}
 
 	// Sphere {16, 0, 0} | r = 5.0
 	sphere = Sphere{Center: Vec3{16.0, 0.0, 0.0}, Radius: 5.0}
-	if b1.IntersectSphere(&sphere) != Outside {
+	if b1.CollideVsSphere(&sphere) != Outside {
 		t.Errorf("AABBox.IntersectSphere() indicated a box intersected that should not have.")
 	}
 
@@ -318,12 +318,12 @@ func TestAABBoxCollisionVsSphere(t *testing.T) {
 	b1.Offset = Vec3{10.0, 10.0, 10.0}
 	// Sphere {0, 0, 0} | r = 5.0
 	sphere = Sphere{Center: Vec3{0.0, 0.0, 0.0}, Radius: 5.0}
-	if b1.IntersectSphere(&sphere) != Intersect {
+	if b1.CollideVsSphere(&sphere) != Intersect {
 		t.Errorf("AABBox.IntersectSphere() indicated a box didn't intersect that should have.")
 	}
 
 	sphere = Sphere{Center: Vec3{-6.0, 0.0, 0.0}, Radius: 5.0}
-	if b1.IntersectSphere(&sphere) != Outside {
+	if b1.CollideVsSphere(&sphere) != Outside {
 		t.Errorf("AABBox.IntersectSphere() indicated a box intersected that should not have.")
 	}
 

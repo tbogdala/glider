@@ -29,6 +29,34 @@ const (
 	Intersect = 4
 )
 
+// Collider is an interface for objects that con collide with other
+// collision primitives.
+type Collider interface {
+	CollideVsSphere(sphere *Sphere) int
+	CollideVsAABBox(box *AABBox) int
+	CollideVsPlane(plane *Plane) int
+	CollideVsRay(ray *CollisionRay) (int, float32)
+	SetOffset(offset *Vec3)
+	SetOffset3f(x,y,z float32)
+}
+
+// Collide tests two objects that are Colliders and returns the collision test result.
+// NOTE: currently this supports cubes and spheres.
+// FIXME: planes and rays are not tested here
+func Collide(c1 Collider, c2 Collider) int {
+	targetBox, okay := c2.(*AABBox)
+	if okay {
+		return c1.CollideVsAABBox(targetBox)
+	}
+
+	targetSphere, okay := c2.(*Sphere)
+	if okay {
+		return c1.CollideVsSphere(targetSphere)
+	}
+
+	return Outside
+}
+
 // Dot calculates the dot product between two vectors and returns the scalar result.
 func (v1 *Vec3) Dot(v2 *Vec3) float32 {
 	return (v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])

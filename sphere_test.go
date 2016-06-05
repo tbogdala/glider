@@ -23,20 +23,26 @@ func TestSphereCollisionVsSphere(t *testing.T) {
     // Sphere {0, 12, 0} | r = 2.0
 	s4 = Sphere{Center: Vec3{0.0, 12.0, 0.0}, Radius: 2.0}
 
-    if s1.IntersectSphere(&s3) != Outside {
+    if s1.CollideVsSphere(&s3) != Outside {
 		t.Errorf("Sphere.IntersectSphere() indicated a sphere intersected that shouldn't have.")
 	}
 
-    if s1.IntersectSphere(&s4) != Outside {
+    if s1.CollideVsSphere(&s4) != Outside {
         t.Errorf("Sphere.IntersectSphere() indicated a sphere intersected that shouldn't have.")
     }
 
-	if s1.IntersectSphere(&s2) != Inside {
+	if s1.CollideVsSphere(&s2) != Inside {
 		t.Errorf("Sphere.IntersectSphere() indicated a sphere didn't intersect inside that should have.")
 	}
 
-    if s3.IntersectSphere(&s4) != Intersect {
+    if s3.CollideVsSphere(&s4) != Intersect {
 		t.Errorf("Sphere.IntersectSphere() indicated a sphere didn't intersect that should have.")
+	}
+
+	// now try some changes to the offset
+	s1.Offset = Vec3{-20, 0, 0}
+	if s1.CollideVsSphere(&s2) != Outside {
+		t.Errorf("Sphere.IntersectSphere() indicated a sphere didn intersected that shouldn't have.")
 	}
 }
 
@@ -60,23 +66,34 @@ func TestSphereCollisionVsRay(t *testing.T) {
 	r2.Origin = Vec3{-100.0, 0.0, 0.0}
 	r2.SetDirection(Vec3{1.0, 0.0, 0.0})
 
-    if s1.IntersectRay(&r1) != true {
+	intersect, _ := s1.CollideVsRay(&r1)
+    if intersect != Intersect {
 		t.Errorf("Sphere.IntersectRay() indicated a sphere didn't intersect that should have.")
 	}
 
-    if s3.IntersectRay(&r1) != false {
+	intersect, _ = s3.CollideVsRay(&r1)
+    if intersect != Outside {
 		t.Errorf("Sphere.IntersectRay() indicated a sphere intersected that shouldn't have.")
 	}
 
-    if s2.IntersectRay(&r2) != true {
+	intersect, _ = s2.CollideVsRay(&r2)
+    if intersect != Intersect {
 		t.Errorf("Sphere.IntersectRay() indicated a sphere didn't intersect that should have.")
 	}
 
     r2.Origin = Vec3{100.0, 0.0, 0.0}
-    if s2.IntersectRay(&r2) != false {
+	intersect, _ = s2.CollideVsRay(&r2)
+    if intersect != Outside {
         t.Errorf("Sphere.IntersectRay() indicated a sphere intersected that shouldn't have.")
 	}
 
+	// try change to the origin
+	r2.Origin = Vec3{-100.0, 0.0, 0.0}
+	s2.Offset = Vec3{0, 20.0, 0}
+	intersect, _ = s2.CollideVsRay(&r2)
+    if intersect != Outside {
+		t.Errorf("Sphere.IntersectRay() indicated a sphere intersected that shouldn't have.")
+	}
 }
 
 func TestSphereCollisionVsAABBox(t *testing.T) {
@@ -90,35 +107,31 @@ func TestSphereCollisionVsAABBox(t *testing.T) {
 
 	// Sphere {0, 0, 0} | r = 5.0
 	sphere = Sphere{Center: Vec3{0.0, 0.0, 0.0}, Radius: 5.0}
-	if sphere.IntersectAABBox(&b1) != Intersect {
+	if sphere.CollideVsAABBox(&b1) != Intersect {
 		t.Errorf("Sphere.IntersectAABBox() indicated a box didn't intersect that should have.")
 	}
+
+	// try a change to the offset
+	sphere.Center = Vec3{20, 20, 20}
+	if sphere.CollideVsAABBox(&b1) != Outside {
+		t.Logf("sphere: %v ; box: %v\n", sphere, b1)
+		t.Errorf("Sphere.IntersectAABBox() indicated a box intersected that shouldn't have.")
+	}
+	sphere.Offset = Vec3{0, 0, 0}
 
 	// Sphere {15, 0, 0} | r = 5.0
 	sphere = Sphere{Center: Vec3{15.0, 0.0, 0.0}, Radius: 5.0}
-	if sphere.IntersectAABBox(&b1) != Intersect {
+	if sphere.CollideVsAABBox(&b1) != Intersect {
 		t.Errorf("Sphere.IntersectAABBox() indicated a box didn't intersect that should have.")
-	}
-
-	// Sphere {16, 0, 0} | r = 5.0
-	sphere = Sphere{Center: Vec3{16.0, 0.0, 0.0}, Radius: 5.0}
-	if sphere.IntersectAABBox(&b1) != Inside {
-		t.Errorf("Sphere.IntersectAABBox() indicated a box didn't intersec that should not have.")
 	}
 
 	// change the box offset ... effective {0, 0, 0}->{20, 20, 20}
 	b1.Offset = Vec3{10.0, 10.0, 10.0}
 	// Sphere {0, 0, 0} | r = 5.0
 	sphere = Sphere{Center: Vec3{0.0, 0.0, 0.0}, Radius: 5.0}
-	if sphere.IntersectAABBox(&b1) != Intersect {
+	if sphere.CollideVsAABBox(&b1) != Intersect {
 		t.Errorf("Sphere.IntersectAABBox() indicated a box didn't intersect that should have.")
 	}
-
-	sphere = Sphere{Center: Vec3{-6.0, 0.0, 0.0}, Radius: 5.0}
-	if sphere.IntersectAABBox(&b1) != Inside {
-		t.Errorf("Sphere.IntersectAABBox() indicated a box didn't intersec that should not have.")
-	}
-
 }
 
 func TestSphereCollisionVsPlane(t *testing.T) {
@@ -130,19 +143,26 @@ func TestSphereCollisionVsPlane(t *testing.T) {
     var p *Plane
     planeNormal := Vec3{1.0, 0.0, 0.0}
 	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{0, 0, 0})
-	if s1.IntersectPlane(p) != Intersect {
+	if s1.CollideVsPlane(p) != Intersect {
 		t.Errorf("Sphere.InstersectPlane() indicated a sphere didn't intersect that should have.")
 	}
 
+	// try a change to the offset
+	s1.Offset = Vec3{20, 0, 0}
+	if s1.CollideVsPlane(p) != Inside {
+		t.Errorf("Sphere.InstersectPlane() indicated a sphere wasn't inside that should have been.")
+	}
+	s1.Offset = Vec3{0, 0, 0}
+
 	// Plane @ {20, 0, 0}   Normal---> {1, 0, 0}
 	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{20, 0, 0})
-	if s1.IntersectPlane(p) != Outside {
+	if s1.CollideVsPlane(p) != Outside {
 		t.Errorf("Sphere.InstersectPlane() indicated a sphere wasn't Outside that should have been.")
 	}
 
 	// Plane @ {-20, 0, 0}   Normal---> {1, 0, 0}
 	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{-20, 0, 0})
-	if s1.IntersectPlane(p) != Inside {
+	if s1.CollideVsPlane(p) != Inside {
 		t.Errorf("Sphere.InstersectPlane() indicated a sphere wasn't Inside that should have been.")
 	}
 
@@ -151,19 +171,19 @@ func TestSphereCollisionVsPlane(t *testing.T) {
 
 	// Plane @ {0, 0, 0}   Normal---> {1, 0, 0}
 	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{0, 0, 0})
-	if s1.IntersectPlane(p) != Inside {
+	if s1.CollideVsPlane(p) != Inside {
 		t.Errorf("Sphere.InstersectPlane() indicated a sphere wasn't Inside that should have been.")
 	}
 
 	// Plane @ {50, 0, 0}   Normal---> {1, 0, 0}
 	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{50, 0, 0})
-	if s1.IntersectPlane(p) != Outside {
+	if s1.CollideVsPlane(p) != Outside {
 		t.Errorf("Sphere.InstersectPlane() indicated a sphere wasn't Outside that should have been.")
 	}
 
 	// Plane @ {25, 25, 25}   Normal---> {1, 0, 0}
 	p = NewPlaneFromNormalAndPoint(planeNormal, Vec3{25, 25, 25})
-	if s1.IntersectPlane(p) != Intersect {
+	if s1.CollideVsPlane(p) != Intersect {
 		t.Errorf("Sphere.InstersectPlane() indicated a sphere didn't intersect that should have.")
 	}
 }

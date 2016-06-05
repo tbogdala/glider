@@ -61,6 +61,20 @@ func NewAABBox() *AABBox {
 	return aabb
 }
 
+
+// SetOffset changes the offset of the collision object.
+func (aabb *AABBox) SetOffset(offset *Vec3) {
+	aabb.Offset = *offset
+}
+
+// SetOffset3f changes the offset of the collision object.
+func (aabb *AABBox) SetOffset3f(x,y,z float32) {
+	aabb.Offset[0] = x
+	aabb.Offset[1] = y
+	aabb.Offset[2] = z
+}
+
+
 // IntersectPoint tests to see if the point is intersects the AABBox.
 func (aabb *AABBox) IntersectPoint(v *Vec3) bool {
 	aMinX := aabb.Min[0] + aabb.Offset[0]
@@ -82,8 +96,8 @@ func (aabb *AABBox) IntersectPoint(v *Vec3) bool {
 	return true
 }
 
-// IntersectBox tests to see if the AABBox parameter intersects the AABBox.
-func (aabb *AABBox) IntersectBox(b2 *AABBox) bool {
+// CollideVsAABBox tests to see if the AABBox parameter intersects the AABBox.
+func (aabb *AABBox) CollideVsAABBox(b2 *AABBox) int {
 	aMinX := aabb.Min[0] + aabb.Offset[0]
 	aMinY := aabb.Min[1] + aabb.Offset[1]
 	aMinZ := aabb.Min[2] + aabb.Offset[2]
@@ -98,14 +112,22 @@ func (aabb *AABBox) IntersectBox(b2 *AABBox) bool {
 	bMaxY := b2.Max[1] + b2.Offset[1]
 	bMaxZ := b2.Max[2] + b2.Offset[2]
 
-	return (max32(aMinX, bMinX) <= min32(aMaxX, bMaxX) &&
+	if (max32(aMinX, bMinX) <= min32(aMaxX, bMaxX) &&
 		max32(aMinY, bMinY) <= min32(aMaxY, bMaxY) &&
-		max32(aMinZ, bMinZ) <= min32(aMaxZ, bMaxZ))
+		max32(aMinZ, bMinZ) <= min32(aMaxZ, bMaxZ)) {
+		return Intersect
+	} else if (aMinX >= bMinX && aMaxX <= bMaxX &&
+		aMinY >= bMinY && aMaxY <= bMaxY &&
+		aMinZ >= bMinZ && aMaxZ <= bMaxZ) {
+		return Inside
+	} else {
+		return Outside
+	}
 }
 
-// IntersectRay tests to see if a raycast intersects the AABBox.
-// Returns intersection status and the length of the ray until intersection
-func (aabb *AABBox) IntersectRay(ray *CollisionRay) (bool, float32) {
+// CollideVsRay tests to see if a raycast intersects the AABBox.
+// Returns intersection status as Intersect or Outside and the length of the ray until intersection
+func (aabb *AABBox) CollideVsRay(ray *CollisionRay) (int, float32) {
 	aMinX := aabb.Min[0] + aabb.Offset[0]
 	aMinY := aabb.Min[1] + aabb.Offset[1]
 	aMinZ := aabb.Min[2] + aabb.Offset[2]
@@ -126,18 +148,18 @@ func (aabb *AABBox) IntersectRay(ray *CollisionRay) (bool, float32) {
 
 	// if tmax < 0, ray is intersecting the box, but the whole AABB is behind
 	if tmax < 0 {
-		return false, tmax
+		return Outside, tmax
 	}
 
 	if tmin > tmax {
-		return false, tmax
+		return Outside, tmax
 	}
 
-	return true, tmin
+	return Intersect, tmin
 }
 
-// IntersectPlane tests to see if the plane is intersects the AABBox.
-func (aabb *AABBox) IntersectPlane(p *Plane) int {
+// CollideVsPlane tests to see if the plane is intersects the AABBox.
+func (aabb *AABBox) CollideVsPlane(p *Plane) int {
 	// implementation based on http://www.lighthouse3d.com/tutorials/view-frustum-culling/
 	// and http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes-ii/
 	min := Vec3{aabb.Min[0] + aabb.Offset[0], aabb.Min[1] + aabb.Offset[1], aabb.Min[2] + aabb.Offset[2]}
@@ -180,9 +202,9 @@ func (aabb *AABBox) IntersectPlane(p *Plane) int {
 	return Inside
 }
 
-// IntersectSphere returns the intersection between an AABB and a sphere. Will
+// CollideVsSphere returns the intersection between an AABB and a sphere. Will
 // return Intersect or Outside depending on the result.
-func (aabb *AABBox) IntersectSphere(s *Sphere) int {
+func (aabb *AABBox) CollideVsSphere(s *Sphere) int {
 	min := Vec3{aabb.Min[0] + aabb.Offset[0], aabb.Min[1] + aabb.Offset[1], aabb.Min[2] + aabb.Offset[2]}
 	max := Vec3{aabb.Max[0] + aabb.Offset[0], aabb.Max[1] + aabb.Offset[1], aabb.Max[2] + aabb.Offset[2]}
 
@@ -191,7 +213,10 @@ func (aabb *AABBox) IntersectSphere(s *Sphere) int {
 	boxCenter.SubInto(&max, &min)
 	boxCenter.MulWith(0.5)
 	boxCenter.AddInto(&boxCenter, &min)
-	sphereCenterRelToBox.SubInto(&s.Center, &boxCenter)
+
+	var offsetSphere Vec3
+	offsetSphere.AddInto(&s.Center, &s.Offset)
+	sphereCenterRelToBox.SubInto(&offsetSphere, &boxCenter)
 
 	// calculate the point of the cube that is closest to the center of the sphere.
 	var boxPoint Vec3
