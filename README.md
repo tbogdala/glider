@@ -1,5 +1,5 @@
-Glider
-======
+Glider v0.1.0
+==============
 
 Glider is a simple collision library written in the [Go][golang] programming language.
 
