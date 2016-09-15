@@ -5,8 +5,6 @@
 
 Package glider is a library that handles 3d collision testing.
 
-Currently only 3d AABB collisions are supported.
-
 */
 package glider
 
@@ -19,14 +17,11 @@ type Vec2 [2]float32
 type Vec3 [3]float32
 
 const (
-	// Inside means the collision was considered to be inside the object
-	Inside = 1
-
-	// Outside means the collision was considered to be outside the object
-	Outside = 2
+	// NoIntersect means there was no collision detect.
+	NoIntersect = 0
 
 	// Intersect means there was a collision
-	Intersect = 4
+	Intersect = 1
 )
 
 // Collider is an interface for objects that con collide with other
@@ -37,7 +32,7 @@ type Collider interface {
 	CollideVsPlane(plane *Plane) int
 	CollideVsRay(ray *CollisionRay) (int, float32)
 	SetOffset(offset *Vec3)
-	SetOffset3f(x,y,z float32)
+	SetOffset3f(x, y, z float32)
 }
 
 // Collide tests two objects that are Colliders and returns the collision test result.
@@ -54,7 +49,7 @@ func Collide(c1 Collider, c2 Collider) int {
 		return c1.CollideVsSphere(targetSphere)
 	}
 
-	return Outside
+	return NoIntersect
 }
 
 // Dot calculates the dot product between two vectors and returns the scalar result.
@@ -82,7 +77,6 @@ func (v1 *Vec3) MulWith(f float32) {
 	v1[1] = v1[1] * f
 	v1[2] = v1[2] * f
 }
-
 
 // CollisionRay represents a simple ray for casting in collision tests.
 type CollisionRay struct {
