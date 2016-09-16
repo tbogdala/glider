@@ -8,13 +8,11 @@ Package glider is a library that handles 3d collision testing.
 */
 package glider
 
-import "math"
+import (
+	"math"
 
-// Vec2 is a 2 dimenional vector
-type Vec2 [2]float32
-
-// Vec3 is a 3 dimenional vector
-type Vec3 [3]float32
+	mgl "github.com/go-gl/mathgl/mgl32"
+)
 
 const (
 	// NoIntersect means there was no collision detect.
@@ -31,7 +29,7 @@ type Collider interface {
 	CollideVsAABBox(box *AABBox) int
 	CollideVsPlane(plane *Plane) int
 	CollideVsRay(ray *CollisionRay) (int, float32)
-	SetOffset(offset *Vec3)
+	SetOffset(offset *mgl.Vec3)
 	SetOffset3f(x, y, z float32)
 }
 
@@ -52,47 +50,21 @@ func Collide(c1 Collider, c2 Collider) int {
 	return NoIntersect
 }
 
-// Dot calculates the dot product between two vectors and returns the scalar result.
-func (v1 *Vec3) Dot(v2 *Vec3) float32 {
-	return (v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2])
-}
-
-// SubInto performs v2-v3 and puts the result into v1, the calling object.
-func (v1 *Vec3) SubInto(v2 *Vec3, v3 *Vec3) {
-	v1[0] = v2[0] - v3[0]
-	v1[1] = v2[1] - v3[1]
-	v1[2] = v2[2] - v3[2]
-}
-
-// AddInto performs v2+v3 and puts the result into v1, the calling object.
-func (v1 *Vec3) AddInto(v2 *Vec3, v3 *Vec3) {
-	v1[0] = v2[0] + v3[0]
-	v1[1] = v2[1] + v3[1]
-	v1[2] = v2[2] + v3[2]
-}
-
-// MulWith multiplies a vector with a scalar value
-func (v1 *Vec3) MulWith(f float32) {
-	v1[0] = v1[0] * f
-	v1[1] = v1[1] * f
-	v1[2] = v1[2] * f
-}
-
 // CollisionRay represents a simple ray for casting in collision tests.
 type CollisionRay struct {
 	// Origin is the start of the ray
-	Origin Vec3
+	Origin mgl.Vec3
 
 	// direction is the unit vector representing the direction of the ray
-	direction Vec3
+	direction mgl.Vec3
 
 	// a cached value used in raycasting
-	directionFraction Vec3
+	directionFraction mgl.Vec3
 }
 
 // SetDirection sets the direction of the collision ray. Will be normalized
 // and have some math cached as well.
-func (cr *CollisionRay) SetDirection(d Vec3) {
+func (cr *CollisionRay) SetDirection(d mgl.Vec3) {
 	// normalize the direction vector
 	dLen := float32(math.Sqrt(float64(d[0]*d[0] + d[1]*d[1] + d[2]*d[2])))
 	l := 1.0 / dLen
@@ -107,7 +79,7 @@ func (cr *CollisionRay) SetDirection(d Vec3) {
 }
 
 // GetDirection gets the direction of the collision ray.
-func (cr *CollisionRay) GetDirection() Vec3 {
+func (cr *CollisionRay) GetDirection() mgl.Vec3 {
 	return cr.direction
 }
 

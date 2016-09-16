@@ -1,5 +1,5 @@
-Glider v0.1.0
-==============
+Glider v0.2.0-development
+=========================
 
 Glider is a simple collision library written in the [Go][golang] programming language.
 
@@ -10,6 +10,7 @@ Installation
 The library can be installed with the following command:
 
 ```bash
+go get github.com/go-gl/mathgl/mgl32
 go get github.com/tbogdala/glider
 ```
 

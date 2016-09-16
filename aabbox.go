@@ -3,16 +3,20 @@
 
 package glider
 
+import (
+	mgl "github.com/go-gl/mathgl/mgl32"
+)
+
 // AABSquare is a axis aligned sqare shape defined by a minimum and maximum corner.
 type AABSquare struct {
 	// Min is the corner of the box opposite of Max. (e.g. lower-left corner)
-	Min Vec2
+	Min mgl.Vec2
 
 	// Max is the corner of the box opposite of Min. (e.g. top-right corner)
-	Max Vec2
+	Max mgl.Vec2
 
 	// Offset is the world-space location of the that can be considered an offset to both Min and Max
-	Offset Vec2
+	Offset mgl.Vec2
 
 	// Tags provides a way to label an AABB geometry in a custom application
 	// (e.g. labelling a collision as "wall" or "floor").
@@ -26,7 +30,7 @@ func NewAABSquare() *AABSquare {
 }
 
 // IntersectPoint tests to see if the point is intersects the AABSquare.
-func (aabs *AABSquare) IntersectPoint(v *Vec2) bool {
+func (aabs *AABSquare) IntersectPoint(v *mgl.Vec2) bool {
 	if v[0] < aabs.Offset[0]+aabs.Min[0] || v[0] > aabs.Offset[0]+aabs.Max[0] {
 		return false
 	}
@@ -40,14 +44,14 @@ func (aabs *AABSquare) IntersectPoint(v *Vec2) bool {
 type AABBox struct {
 	// Min is the corner of the box opposite of Max. (e.g. lower-back-left corner)
 	// and should be the more 'negative' corner (e.g. max={3,3,3} and min={1,1,1} )
-	Min Vec3
+	Min mgl.Vec3
 
 	// Max is the corner of the box opposite of Min. (e.g. top-front-right corner)
 	// and should be the more 'positive' corner (e.g. max={3,3,3} and min={1,1,1} )
-	Max Vec3
+	Max mgl.Vec3
 
 	// Offset is the world-space location of the that can be considered an offset to both Min and Max
-	Offset Vec3
+	Offset mgl.Vec3
 
 	// Tags provides a way to label an AABB geometry in a custom application
 	// (e.g. labelling a collision as "wall" or "floor").
@@ -61,7 +65,7 @@ func NewAABBox() *AABBox {
 }
 
 // SetOffset changes the offset of the collision object.
-func (aabb *AABBox) SetOffset(offset *Vec3) {
+func (aabb *AABBox) SetOffset(offset *mgl.Vec3) {
 	aabb.Offset = *offset
 }
 
@@ -73,7 +77,7 @@ func (aabb *AABBox) SetOffset3f(x, y, z float32) {
 }
 
 // IntersectPoint tests to see if the point is intersects the AABBox.
-func (aabb *AABBox) IntersectPoint(v *Vec3) bool {
+func (aabb *AABBox) IntersectPoint(v *mgl.Vec3) bool {
 	aMinX := aabb.Min[0] + aabb.Offset[0]
 	aMinY := aabb.Min[1] + aabb.Offset[1]
 	aMinZ := aabb.Min[2] + aabb.Offset[2]
@@ -123,7 +127,6 @@ func (aabb *AABBox) CollideVsAABBox(b2 *AABBox) int {
 }
 
 // CollideVsRay tests to see if a raycast intersects the AABBox.
-// Returns intersection status as Intersect or Outside and the length of the ray until intersection
 func (aabb *AABBox) CollideVsRay(ray *CollisionRay) (int, float32) {
 	aMinX := aabb.Min[0] + aabb.Offset[0]
 	aMinY := aabb.Min[1] + aabb.Offset[1]
@@ -159,10 +162,10 @@ func (aabb *AABBox) CollideVsRay(ray *CollisionRay) (int, float32) {
 func (aabb *AABBox) CollideVsPlane(p *Plane) int {
 	// implementation based on http://www.lighthouse3d.com/tutorials/view-frustum-culling/
 	// and http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-testing-boxes-ii/
-	min := Vec3{aabb.Min[0] + aabb.Offset[0], aabb.Min[1] + aabb.Offset[1], aabb.Min[2] + aabb.Offset[2]}
-	max := Vec3{aabb.Max[0] + aabb.Offset[0], aabb.Max[1] + aabb.Offset[1], aabb.Max[2] + aabb.Offset[2]}
+	min := mgl.Vec3{aabb.Min[0] + aabb.Offset[0], aabb.Min[1] + aabb.Offset[1], aabb.Min[2] + aabb.Offset[2]}
+	max := mgl.Vec3{aabb.Max[0] + aabb.Offset[0], aabb.Max[1] + aabb.Offset[1], aabb.Max[2] + aabb.Offset[2]}
 
-	var posCorner, negCorner Vec3
+	var posCorner, negCorner mgl.Vec3
 	if p.Normal[0] >= 0 {
 		negCorner[0] = min[0]
 		posCorner[0] = max[0]
@@ -188,11 +191,11 @@ func (aabb *AABBox) CollideVsPlane(p *Plane) int {
 	}
 
 	// is the positive vertex outside
-	if p.Distance(&posCorner) < 0 {
+	if p.Distance(posCorner) < 0 {
 		return NoIntersect
 	}
 	// is the negative vertex outside
-	if p.Distance(&negCorner) <= 0 {
+	if p.Distance(negCorner) <= 0 {
 		return Intersect
 	}
 
@@ -201,21 +204,21 @@ func (aabb *AABBox) CollideVsPlane(p *Plane) int {
 
 // CollideVsSphere returns the intersection between an AABB and a sphere.
 func (aabb *AABBox) CollideVsSphere(s *Sphere) int {
-	min := Vec3{aabb.Min[0] + aabb.Offset[0], aabb.Min[1] + aabb.Offset[1], aabb.Min[2] + aabb.Offset[2]}
-	max := Vec3{aabb.Max[0] + aabb.Offset[0], aabb.Max[1] + aabb.Offset[1], aabb.Max[2] + aabb.Offset[2]}
+	min := mgl.Vec3{aabb.Min[0] + aabb.Offset[0], aabb.Min[1] + aabb.Offset[1], aabb.Min[2] + aabb.Offset[2]}
+	max := mgl.Vec3{aabb.Max[0] + aabb.Offset[0], aabb.Max[1] + aabb.Offset[1], aabb.Max[2] + aabb.Offset[2]}
 
 	// calc the center of the sphere relative to the box center
-	var sphereCenterRelToBox, boxCenter Vec3
-	boxCenter.SubInto(&max, &min)
-	boxCenter.MulWith(0.5)
-	boxCenter.AddInto(&boxCenter, &min)
+	var sphereCenterRelToBox, boxCenter mgl.Vec3
+	boxCenter = max.Sub(min)
+	boxCenter = boxCenter.Mul(0.5)
+	boxCenter = boxCenter.Add(min)
 
-	var offsetSphere Vec3
-	offsetSphere.AddInto(&s.Center, &s.Offset)
-	sphereCenterRelToBox.SubInto(&offsetSphere, &boxCenter)
+	var offsetSphere mgl.Vec3
+	offsetSphere = s.Center.Add(s.Offset)
+	sphereCenterRelToBox = offsetSphere.Sub(boxCenter)
 
 	// calculate the point of the cube that is closest to the center of the sphere.
-	var boxPoint Vec3
+	var boxPoint mgl.Vec3
 
 	// half dimensions
 	boxHalfW := (max[0] - min[0]) * 0.5
@@ -252,9 +255,9 @@ func (aabb *AABBox) CollideVsSphere(s *Sphere) int {
 	// use the closest point on the box to get the distance between
 	// that and the center of the sphere and see if it's less than
 	// the radius.
-	var distance Vec3
-	distance.SubInto(&sphereCenterRelToBox, &boxPoint)
-	if distance.Dot(&distance) <= s.Radius*s.Radius {
+	var distance mgl.Vec3
+	distance = sphereCenterRelToBox.Sub(boxPoint)
+	if distance.Dot(distance) <= s.Radius*s.Radius {
 		return Intersect
 	}
 
