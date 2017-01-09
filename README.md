@@ -1,7 +1,8 @@
-Glider v0.2.0-development
-=========================
+Glider v0.2.0
+=============
 
-Glider is a simple collision library written in the [Go][golang] programming language.
+Glider is a simple collision library written in the [Go][golang] programming language using 
+axis aligned primitives and ray casts. Support for oriented primitives is still under development.
 
 
 Installation
