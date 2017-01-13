@@ -20,6 +20,11 @@ type Sphere struct {
 	Radius float32
 }
 
+// NewSphere creates a new Sphere object.
+func NewSphere() *Sphere {
+	return new(Sphere)
+}
+
 // SetOffset changes the offset of the collision object.
 func (s1 *Sphere) SetOffset(offset *mgl.Vec3) {
 	s1.Offset = *offset
