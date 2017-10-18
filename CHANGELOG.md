@@ -1,3 +1,8 @@
+Version v0.2.1
+==============
+
+* NEW: Added a NewSphere function.
+
 Version v0.2.0
 ====================
 
