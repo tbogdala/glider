@@ -61,6 +61,11 @@ func (obb *OBBox) SetOffset(offset mgl.Vec3) {
 	obb.syncOffset()
 }
 
+// GetOffset returns the offset of the collision object.
+func (obb *OBBox) GetOffset() mgl.Vec3 {
+	return obb.Offset
+}
+
 // SetOffset3f changes the offset of the collision object.
 func (obb *OBBox) SetOffset3f(x, y, z float32) {
 	obb.Offset[0] = x

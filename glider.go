@@ -31,6 +31,7 @@ type Collider interface {
 	CollideVsRay(ray *CollisionRay) (int, float32)
 	SetOffset(offset *mgl.Vec3)
 	SetOffset3f(x, y, z float32)
+	GetOffset() mgl.Vec3
 }
 
 // Collide tests two objects that are Colliders and returns the collision test result.

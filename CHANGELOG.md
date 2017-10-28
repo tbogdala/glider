@@ -1,5 +1,11 @@
+Version v0.2.2
+=============
+
+* NEW: Added Collider.GetOffset() to the Collider Interface.
+
+
 Version v0.2.0
-====================
+==============
 
 * APIBREAK: Changed results from being Intersect/Outside/Inside to just being Intersect/NoIntersect.
   The theory behind this is that this is supposed to be a 'coarse' collision library and

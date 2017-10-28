@@ -69,6 +69,11 @@ func (aabb *AABBox) SetOffset(offset *mgl.Vec3) {
 	aabb.Offset = *offset
 }
 
+// GetOffset returns the offset of the collision object.
+func (aabb *AABBox) GetOffset() mgl.Vec3 {
+	return aabb.Offset
+}
+
 // SetOffset3f changes the offset of the collision object.
 func (aabb *AABBox) SetOffset3f(x, y, z float32) {
 	aabb.Offset[0] = x

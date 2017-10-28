@@ -30,6 +30,11 @@ func (s1 *Sphere) SetOffset(offset *mgl.Vec3) {
 	s1.Offset = *offset
 }
 
+// GetOffset returns the offset of the collision object.
+func (s1 *Sphere) GetOffset() mgl.Vec3 {
+	return s1.Offset
+}
+
 // SetOffset3f changes the offset of the collision object.
 func (s1 *Sphere) SetOffset3f(x, y, z float32) {
 	s1.Offset[0] = x
