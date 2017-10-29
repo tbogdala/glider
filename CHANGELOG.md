@@ -3,6 +3,9 @@ Version v0.2.2
 
 * NEW: Added Collider.GetOffset() to the Collider Interface.
 
+* NEW: Added CollisionRay.IntersectTri() to test for collision against a triangle
+  defined by three points.
+  
 
 Version v0.2.1
 ==============

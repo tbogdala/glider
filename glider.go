@@ -84,6 +84,28 @@ func (cr *CollisionRay) GetDirection() mgl.Vec3 {
 	return cr.direction
 }
 
+// IntersectTri will return true if the ray intersects a triangle
+// defined by three points and the distance it intersects at.
+func (cr *CollisionRay) IntersectTri(p0, p1, p2 mgl.Vec3) (intersected bool, dist float32) {
+	u := p1.Sub(p0)
+	v := p2.Sub(p0)
+
+	var normal mgl.Vec3
+	normal[0] = u[1]*v[2] - u[2]*v[1]
+	normal[1] = u[2]*v[0] - u[0]*v[2]
+	normal[2] = u[0]*v[1] - u[1]*v[0]
+
+	denom := normal.Dot(cr.direction)
+	if math.Abs(float64(denom)) > 0.0001 {
+		t := p0.Sub(cr.Origin).Dot(normal) / denom
+		if t >= 0 {
+			return true, t
+		}
+	}
+
+	return false, 0.0
+}
+
 func max32(x, y float32) float32 {
 	switch {
 	case math.IsInf(float64(x), 1) || math.IsInf(float64(y), 1):
